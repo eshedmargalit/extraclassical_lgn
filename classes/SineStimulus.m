@@ -49,7 +49,7 @@ classdef SineStimulus < Stimulus
 			yy = ygrid * sin(theta);
 			xxyy = xx + yy;
 			wavex = xxyy * 2 * pi * spatial_freq;
-			wave = sin(wavex + phase);
+			wave = amp .* sin(wavex + phase);
 		end
 	end	
 end
