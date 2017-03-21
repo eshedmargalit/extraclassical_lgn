@@ -1,6 +1,7 @@
 classdef SineStimulus < Stimulus
 	properties
-		freq
+		spatial_freq
+		temporal_freq
 		deg
 	end
 
@@ -9,17 +10,24 @@ classdef SineStimulus < Stimulus
 	end
 
 	methods
-		function obj = SineStimulus(freq, deg, amp, xc, yc, diam, xrng, yrng, time)
+		function obj = SineStimulus(spatial_freq, temporal_freq, deg, amp, xc, yc, diam, xrng, yrng, time_vec);
 			% Call parent constructor
 			obj@Stimulus(xc,yc,diam,xrng,yrng);
 
 			% Set own fields
-			obj.freq = freq;
+			obj.spatial_freq = spatial_freq;
+			obj.temporal_freq = temporal_freq;
 			obj.deg = deg;
 
 			% Compute grating and populate 'stim' field
-			for t = 1:numel(time)
-				wave = SineStimulus.genwave(freq,deg,amp,t,xc,yc,diam,xrng,yrng);
+			total_time = time_vec(end);
+			n_cycles = total_time * temporal_freq;
+			numel(time_vec);
+			ticks_per_cycle = numel(time_vec) / n_cycles;
+
+			for t = 1:numel(time_vec)
+				phase = (2 * pi) / (ticks_per_cycle / t);
+				wave = SineStimulus.genwave(spatial_freq,deg,amp,phase,xc,yc,diam,xrng,yrng);
 				masked_wave = obj.mask .* wave;
 				masked_wave(~obj.mask) = 0.5;
 				obj.images(:,:,t) = masked_wave; 
@@ -32,7 +40,7 @@ classdef SineStimulus < Stimulus
 	end
 
 	methods (Static)
-		function wave = genwave(freq,deg,amp,phase,xc,yc,diam,xrng,yrng)
+		function wave = genwave(spatial_freq,deg,amp,phase,xc,yc,diam,xrng,yrng)
 			[xgrid, ygrid] = meshgrid(xrng,yrng);
 			rad = diam / 2;
 
@@ -40,8 +48,8 @@ classdef SineStimulus < Stimulus
 			xx = xgrid * cos(theta);
 			yy = ygrid * sin(theta);
 			xxyy = xx + yy;
-			wavex = xxyy * 2 * pi * freq;
-			wave = sin(wavex + phase);
+			wavex = xxyy * 2 * pi * spatial_freq;
+			wave = amp .* sin(wavex + phase);
 		end
 	end	
 end

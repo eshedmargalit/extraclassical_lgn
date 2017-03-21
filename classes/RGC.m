@@ -1,7 +1,7 @@
 classdef RGC
 	
 	% private properties
-	properties (SetAccess = private)
+	properties (Access = private)
 		x
 		y
 		rf_params
@@ -17,7 +17,7 @@ classdef RGC
 			end
 
 			if isempty(basal_fr)
-				basal_fr = 700;
+				basal_fr = 20; %Hz
 			end
 
 			cell.x = x;
@@ -40,8 +40,8 @@ classdef RGC
 
 		% Other functions
 		function fr = respond_to_stimulus(cell, stim)
-			fr = sum(sum(cell.rf_2d .* stim)) + cell.basal_fr;
-			fr = fr + randn(1,1) * mean(fr) * .1;
+			fr = 1000*sum(sum(cell.rf_2d .* stim))/prod(size(cell.rf_2d)) + cell.basal_fr;
+			%fr = fr + randn(1,1) * fr * .001;
 		end
 	end
 
