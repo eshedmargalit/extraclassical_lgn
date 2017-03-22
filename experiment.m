@@ -1,6 +1,6 @@
 %% VARIABLE INIT
-total_time = 5; %s
-time_step = .005; %s
+total_time = 2; %s
+time_step = .001; %s
 time_vec = time_step:time_step:total_time;
 N = numel(time_vec);
 
@@ -12,15 +12,15 @@ spatial_frequency = 0.18;
 temporal_frequency = 4; %Hz
 angle = 45;
 amplitude = 1;
-basal_fr = 20;
+basal_fr = 75;
 
 %% CELL POPULATION INIT
 n_cells = 9;
-xs = [-5 -5 -5 0 0 0 5 5 5];
-ys = [-5 -5 -5 0 0 0 5 5 5];
+xs = [-2 -2 -2 0 0 0 2 2 2];
+ys = [-2 0 2 -2 0 2 -2 0 2];
 
 for i=1:n_cells
-	RGCs{i} = RGC(xs(i),ys(i),[],rng,rng,basal_fr);
+	RGCs{i} = RGC(xs(i),ys(i),[],rng,rng,basal_fr,1);
 end
 
 frs = zeros(n_cells,N);
@@ -41,8 +41,15 @@ for x_center = 0
 end
 
 figure;
+spikes = zeros(n_cells,N);
+spike_times = cell(n_cells,1);
+
 for cell = 1:n_cells
-	[spikes, spike_times] = RGC.poisson_generator(frs(cell,:),time_step);
+	[spikes(cell,:), spike_times{cell}] = RGC.poisson_generator(frs(cell,:),time_step);
 	subplot(n_cells,1,cell)
-	plot(spikes);
+	n_spikes = numel(spike_times);
+	spike_counts(cell) = n_spikes;
+	plot(spikes(cell,:));
 end
+
+disp(mean(spike_counts));
