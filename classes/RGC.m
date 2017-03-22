@@ -6,11 +6,13 @@ classdef RGC
 		y
 		rf_params
 		rf_2d
+		ecrf_2d
 		basal_fr
+		extraclassical_suppression
 	end
 	methods
 		% constructor
-		function cell = RGC(x,y,rf_params,xrng,yrng,basal_fr)
+		function cell = RGC(x,y,rf_params,xrng,yrng,basal_fr,es)
 		
 			if isempty(rf_params)
 				rf_params = [9 1 1.5 2];
@@ -26,6 +28,8 @@ classdef RGC
 			cell.basal_fr = basal_fr;
 
 			cell.rf_2d = RGC.compute_rf(rf_params, xrng, yrng, x, y);
+			cell.ecrf_2d = RGC.compute_ecrf(rf_params, xrng, yrng, x, y);
+			cell.extraclassical_suppression = es;
 		end
 
 		% Getter functions
@@ -40,8 +44,13 @@ classdef RGC
 
 		% Other functions
 		function fr = respond_to_stimulus(cell, stim)
-			fr = 1000*sum(sum(cell.rf_2d .* stim))/prod(size(cell.rf_2d)) + cell.basal_fr;
+			fr = 250000*sum(sum(cell.rf_2d .* stim))/prod(size(cell.rf_2d)) + cell.basal_fr;
 			fr = fr + randn(1,1) * fr * .1;
+
+			% extraclassical suppression
+			dotstim = cell.extraclassical_suppression * (stim ~= stim(1,1));
+			drag = 10*sum(sum(cell.ecrf_2d .* dotstim))/prod(size(cell.rf_2d));	
+			fr = fr + drag;
 		end
 	end
 
@@ -65,6 +74,22 @@ classdef RGC
 			rf = g1 - g2;
 		end
 
+		function ecrf = compute_ecrf(params, xrng, yrng, xc, yc)
+		% params - [amp1 rad1 amp2 rad2] for the main RF
+		% xrng - values over which to compute rf 
+		% yrng - see above
+		% xc, yc, center points
+			[x, y] = meshgrid(xrng,yrng);
+			amp = 0.5;
+			rad = 8;
+
+			exp1 = ((x-xc).^2 + (y-yc).^2)./(2*rad^2);
+			amp1 = amp * (1 / (2 * sqrt(2*pi)));
+			gaussian = amp1  * exp(-exp1);
+
+			ecrf = -gaussian;
+		end
+
 		function [spike_vec, spike_times] = poisson_generator(frs, dt)
 			expected_per_step = frs .* dt;
 			n_steps = numel(frs);
@@ -78,7 +103,6 @@ classdef RGC
 			end
 
 			spike_times = find(spike_vec==1);
-			
 		end
 	end
 end
