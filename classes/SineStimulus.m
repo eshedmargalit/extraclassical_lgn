@@ -5,12 +5,12 @@ classdef SineStimulus < Stimulus
 		deg
 	end
 
-	properties (Access = private)
+	properties (Access = protected)
 		images
 	end
 
 	methods
-		function obj = SineStimulus(spatial_freq, temporal_freq, deg, amp, xc, yc, diam, xrng, yrng, time_vec);
+		function obj = SineStimulus(spatial_freq, temporal_freq, deg, amp, xc, yc, diam, xrng, yrng, time_vec)
 			% Call parent constructor
 			obj@Stimulus(xc,yc,diam,xrng,yrng);
 

@@ -1,22 +1,22 @@
-function [f1_amp,mn_fr] = single_cell_single_stim_test(diam,sf)
-	total_time = 2; %s
-	time_step = .01; %s
+function [f1_amp,mn_fr,frs] = single_cell_single_stim_test(diam)
+	total_time = 5; %s
+	time_step = .005; %s
 	time_vec = time_step:time_step:total_time;
 	N = numel(time_vec);
-	temporal_frequency = 4; %Hz
 
 	rng = linspace(-10,10,500);
 	rf_params = [];
 
 	%% Create stimulus and cell
 	spatial_frequency = 0.18;
+	temporal_frequency = 4; %Hz
 	angle = 45;
 	amplitude = 1;
 	x_center = 1;
 	y_center = 1;
-	s = SineStimulus(sf,temporal_frequency,angle,amplitude,x_center,y_center,diam,rng,rng,time_vec);
+	s = SineStimulus(spatial_frequency,temporal_frequency,angle,amplitude,x_center,y_center,diam,rng,rng,time_vec);
 	basal_fr = 15;
-	rgc1 = RGC(1,1,rf_params,rng,rng,15);
+	rgc1 = RGC(1,1,rf_params,rng,rng,basal_fr);
 	%surf(rgc1.get_rf());
 	%figure;
 	%surf(s.get_stim_at_time(1));
@@ -64,4 +64,7 @@ function [f1_amp,mn_fr] = single_cell_single_stim_test(diam,sf)
 	[f1_amp, idx] = max(spectrum(2:end));
 	f1 = freq(idx);
 	mn_fr = mean(frs);
+
+	[spikes, spike_times] = RGC.poisson_generator(frs,time_step);
+	plot(spikes);
 end

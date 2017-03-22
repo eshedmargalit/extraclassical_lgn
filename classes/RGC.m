@@ -41,7 +41,7 @@ classdef RGC
 		% Other functions
 		function fr = respond_to_stimulus(cell, stim)
 			fr = 1000*sum(sum(cell.rf_2d .* stim))/prod(size(cell.rf_2d)) + cell.basal_fr;
-			%fr = fr + randn(1,1) * fr * .001;
+			fr = fr + randn(1,1) * fr * .1;
 		end
 	end
 
@@ -63,6 +63,22 @@ classdef RGC
 			g2 = amp2  * exp(-exp2);
 
 			rf = g1 - g2;
+		end
+
+		function [spike_vec, spike_times] = poisson_generator(frs, dt)
+			expected_per_step = frs .* dt;
+			n_steps = numel(frs);
+
+			spike_vec = zeros(n_steps,1);
+			for step = 1:n_steps
+				thresh = randn(1,1);
+				if expected_per_step(step) > thresh
+					spike_vec(step) = 1;
+				end
+			end
+
+			spike_times = find(spike_vec==1);
+			
 		end
 	end
 end
